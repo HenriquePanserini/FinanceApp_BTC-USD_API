@@ -3,5 +3,5 @@ import { config } from 'dotenv'
 
 export const connectToMongoDB = async () => {
     config()
-    await connect(process.env.MONGODB_CONNECTION_URL);
+    await connect(process.env.MONGODB_CONNECTION_URL || 'mongodb://localhost/candles');
 }

@@ -1,8 +1,9 @@
 import { Channel, connect } from 'amqplib'
 import { config } from 'dotenv'
 import { Server } from 'socket.io'
+import { Buffer } from 'buffer'
 import * as http from 'http'
-import CandleController from 'src/controllers/candlesController'
+import CandleController from '../controllers/candlesController'
 import {Candle} from '../models/candleModel'
 
 
@@ -25,7 +26,7 @@ export default class CandleMessageChannel {
         this._io.on('connection', () => console.log('Web socket connection created'))
     }
 
-    async createMessageChannel()
+    private async _createMessageChannel()
     {
         try {
             const connection = await connect(process.env.AMQP_SERVER || 'amqp://henrique:gtcanime@localhost:5672')
@@ -38,18 +39,19 @@ export default class CandleMessageChannel {
 
     }
 
-    consumeMessages(){
-        
+   async consumeMessages(){
+        await this._createMessageChannel()
         this._channel.consume('candles', async msg => {
-            const candleObj = JSON.parse(msg.content.toString())
+            const candleObj = JSON.parse(msg!.content.toString('utf-8'))
             console.log('Message received')
             console.log(candleObj)
-            this._channel.ack(msg)
+            this._channel.ack(msg!)
 
             const candle: Candle = candleObj
             await this._candleCtrl.save(candle)
             console.log('Candle saved in database')
             this._io.emit(process.env.SOCKET_EVENT_NAME || 'newCandles', candle)
+            console.log('New candle emited by web socket')
     })
-}
+  }
 }

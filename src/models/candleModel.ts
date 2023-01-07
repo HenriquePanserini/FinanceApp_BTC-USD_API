@@ -20,4 +20,4 @@ const schema = new Schema<Candle>({
     color: {type: String, required: true}
 });
 
-const candleModel = model<Candle>('Candle', schema)
+export const candleModel = model<Candle>('Candle', schema)
